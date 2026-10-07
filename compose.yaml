@@ -5,8 +5,8 @@ services:
     volumes: ["mongo-data:/data/db"]
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
-      interval: 5s
-      timeout: 3s
+      interval: 20s
+      timeout: 15s
       retries: 20
   payments:
     restart: unless-stopped

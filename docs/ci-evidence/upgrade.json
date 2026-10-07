@@ -1,0 +1,18 @@
+{
+  "orders_url": "http://127.0.0.1:8000",
+  "payments_url": "http://127.0.0.1:8001",
+  "success": {
+    "id": "3eb64f57-86a0-4295-b040-42edd16b30f7",
+    "amount": 1234,
+    "currency": "INR",
+    "status": "paid",
+    "transaction_id": "1672d01e-34be-478c-a88e-30220c64a94c"
+  },
+  "failure": {
+    "id": "92553d21-7b0f-4e53-ad38-22890a80f2ed",
+    "amount": 1234,
+    "currency": "INR",
+    "status": "failed",
+    "transaction_id": "4556a432-6035-4ea0-a93a-b19493543f6f"
+  }
+}

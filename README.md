@@ -1,6 +1,10 @@
 # Containerised Payments Microservices with CI/CD & Monitoring
 
+[![Test and publish](https://github.com/vasun26shriya/containerised-payments-microservices/actions/workflows/ci.yml/badge.svg)](https://github.com/vasun26shriya/containerised-payments-microservices/actions/workflows/ci.yml)
+
 Runnable portfolio simulation. No real provider, card data, or actual money movement.
+
+Public images: [Orders](https://hub.docker.com/r/shriyavsingh/payments-orders) and [Payments](https://hub.docker.com/r/shriyavsingh/payments-payments), tagged with full Git commit SHAs. See [verified deployment evidence](docs/verification.md).
 
 ```mermaid
 flowchart LR
@@ -93,7 +97,7 @@ Development MongoDB is unauthenticated and single-node. The production values re
 
 ## Verification status
 
-The complete 16-test suite passed against real MongoDB, including real HTTP timeouts and restarts of both API processes. Compose configuration, Helm dev/prod lint/rendering, Prometheus configuration and alert tests, and Alertmanager configuration passed. Both alerts fired and reached Alertmanager in a live local demonstration. See [verification record](docs/verification.md) and [alert evidence](docs/monitoring-evidence.json). Grafana provisioning, datasource health and visual rendering were verified against a live native stack; see [dashboard screenshot](docs/grafana-dashboard.jpg). Container image builds, Minikube releases and Docker Hub publication still require the container runtime and publishing accounts. The CI workflow now automates Compose deployment, Grafana checks and a Minikube install/upgrade/rollback demonstration.
+The complete 16-test suite passed against real MongoDB, including real HTTP timeouts and restarts of both API processes. Compose configuration, Helm dev/prod lint/rendering, Prometheus configuration and alert tests, and Alertmanager configuration passed. Both alerts fired and reached Alertmanager in a live local demonstration. See [verification record](docs/verification.md) and [alert evidence](docs/monitoring-evidence.json). Grafana provisioning, datasource health and visual rendering were verified against a live native stack; see [dashboard screenshot](docs/grafana-dashboard.jpg). Both API images were built and the full Compose stack passed locally. GitHub CI passed tests, Compose and Minikube install/upgrade/rollback, then published both images to Docker Hub with full SHA tags. The verification record links the successful run and retained evidence.
 
 ## Official configuration references
 
@@ -107,3 +111,4 @@ The complete 16-test suite passed against real MongoDB, including real HTTP time
 - [Minikube image builds](https://minikube.sigs.k8s.io/docs/commands/image/)
 - [Grafana provisioning](https://grafana.com/docs/grafana/latest/administration/provisioning/)
 - [Compose specification](https://github.com/compose-spec/compose-spec/blob/main/spec.md)
+

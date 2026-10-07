@@ -27,13 +27,29 @@ Verified on 2026-10-07 in the provided Windows workspace with Python 3.13.7.
 - Passed deployed Compose API, idempotency, conflict, Prometheus targets and Grafana provisioning checks; saved [Compose evidence](compose-evidence.json).
 - Repeated all 16 integration tests against the running Compose MongoDB: 16 passed, no skips.
 - [GitHub Actions run 37629765160](https://github.com/vasun26shriya/containerised-payments-microservices/actions/runs/37629765160) passed test, compose-smoke and minikube-smoke on commit 8dff22f. CI deployed Kubernetes 1.32.0, checked the application and monitoring, upgraded the Helm release, successfully rolled back to revision 1 and verified the original persisted order after both changes.
-- The image publication jobs failed because Docker Hub credentials were missing. DOCKERHUB_USERNAME is now configured; DOCKERHUB_TOKEN still requires the account owner's entry. Images have not yet been published.
+- The first image publication attempt failed because Docker Hub credentials were missing. The owner then configured both GitHub Secrets. [Run 37632549017](https://github.com/vasun26shriya/containerised-payments-microservices/actions/runs/37632549017) on commit 837cea7 passed every job, including both image publication jobs. Registry inspection confirmed both linux/amd64 images and their manifests.
 - Fixed CI artifact retention for the ignored `.run` directory using `include-hidden-files: true`; the earlier successful run has logs but did not retain its hidden-directory artifacts.
 
-## Remaining checks and local environment
+## Published release
 
-Local Minikube deployment is in progress. Its first startup failed while applying owner-only SSH-key permissions on Windows; the exact permission command subsequently succeeded and the incomplete profile was restarted. Remote Kubernetes success above does not imply the Windows cluster has succeeded.
+Tag: `837cea7fbcdf1f9bcc265121e3ee0e85617f3e56`.
+
+- Orders: `shriyavsingh/payments-orders`, index digest `sha256:3d3606b4e997ce4f8cb62346237bea9f386e5c704e097097bd0898ce57d8194a`.
+- Payments: `shriyavsingh/payments-payments`, index digest `sha256:951e3dbc6a47de1f4ba735c44e40b5b9f1cb38a6b494473c581aa3b83e908806`.
+- Retained CI [install](ci-evidence/install.json), [upgrade](ci-evidence/upgrade.json), [rollback](ci-evidence/rollback.json) and [Helm history](ci-evidence/helm-history.txt) evidence came from successful run 37632549017.
+
+## Local deployment and environment
+
+Local Minikube profile `payments` runs Kubernetes 1.32.0 with the Docker driver, two CPUs and 4 GiB RAM. All six pods are ready and the MongoDB PVC is bound. The first startup's Windows SSH-key permission command failed; a clean retry succeeded. Minikube image loading then encountered the retired WMIC dependency, so built images were transferred through a Docker archive into the node runtime.
+
+Local [installation](minikube-install-evidence.json), [upgrade](minikube-upgrade-evidence.json), [rollback](minikube-rollback-evidence.json) and [Helm history](helm-history.txt) checks all passed. Revision 3 was the corrected working baseline, revision 4 demonstrated the second image tags, and revision 5 rolled back to revision 3. The original order and transaction were unchanged. These tags use identical application source to demonstrate release mechanics.
+
+Host load exposed intermittent timeouts in the development MongoDB shell probe. Compose and Helm now use a 15-second probe timeout and a 20-second interval. Monitoring deployments now wait for HTTP readiness before port-forwarding; this fixed a premature Grafana connection failure. Dev/prod Helm lint and Compose configuration passed after the changes. The corrected Compose stack passed again, including preservation of the earlier order across MongoDB recreation.
+
+Local Kubernetes endpoints are Orders `http://127.0.0.1:18000/docs`, Payments `http://127.0.0.1:18001/docs`, Prometheus `http://127.0.0.1:19090`, Grafana `http://127.0.0.1:13000` and Alertmanager `http://127.0.0.1:19093`. Port-forward process IDs are recorded in ignored `.run/kubernetes-forward-pids.txt`; they must stay running for these URLs. Compose also remains running on the documented standard ports.
 
 The host Python virtual-environment bootstrap failed, so dependencies were installed into ignored workspace directories. Windows async tests required approved local socket access outside the restricted sandbox. A normal Python installation can use the README virtual-environment commands. Downloaded tools and test data are ignored by Git and excluded from Docker build contexts.
 
 Alertmanager reception is verified; external notification delivery remains deliberately unconfigured for the local demo. No account tokens are stored in the project. Docker cloud promotional credits are separate from this local project and are not required to run it.
+
+

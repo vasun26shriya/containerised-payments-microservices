@@ -1,24 +1,24 @@
 {
-  "orders_url": "http://127.0.0.1:8000",
-  "payments_url": "http://127.0.0.1:8001",
+  "orders_url": "http://127.0.0.1:18000",
+  "payments_url": "http://127.0.0.1:18001",
   "success": {
-    "id": "6a263ce8-44e2-435b-801c-6666bdaa2084",
+    "id": "5ae0034a-81f7-4c6c-bf35-1aa4e353cbae",
     "amount": 1234,
     "currency": "INR",
     "status": "paid",
-    "transaction_id": "88bf7234-f7af-44d5-b72f-7ce9a3da89af"
+    "transaction_id": "be5f222c-e51f-497e-a78f-b9dadcf25c2c"
   },
   "failure": {
-    "id": "cae329cf-a7bf-4fc7-96c4-b8fb4a07d641",
+    "id": "a76443ab-2d61-4c3d-94f9-e4908b6dd657",
     "amount": 1234,
     "currency": "INR",
     "status": "failed",
-    "transaction_id": "4f6c5df8-50d9-45af-9567-fe8592ad19e8"
+    "transaction_id": "bf593d75-2fec-4116-b9eb-72680eaef849"
   },
   "prometheus_targets": [
     {
       "discoveredLabels": {
-        "__address__": "orders:8000",
+        "__address__": "demo-orders:8000",
         "__metrics_path__": "/metrics",
         "__scheme__": "http",
         "__scrape_interval__": "15s",
@@ -26,22 +26,22 @@
         "job": "payments-apis"
       },
       "labels": {
-        "instance": "orders:8000",
+        "instance": "demo-orders:8000",
         "job": "payments-apis"
       },
       "scrapePool": "payments-apis",
-      "scrapeUrl": "http://orders:8000/metrics",
-      "globalUrl": "http://orders:8000/metrics",
+      "scrapeUrl": "http://demo-orders:8000/metrics",
+      "globalUrl": "http://demo-orders:8000/metrics",
       "lastError": "",
-      "lastScrape": "2026-10-07T14:18:53.894636087Z",
-      "lastScrapeDuration": 0.040793583,
+      "lastScrape": "2026-10-07T14:18:11.353298318Z",
+      "lastScrapeDuration": 0.023529422,
       "health": "up",
       "scrapeInterval": "15s",
       "scrapeTimeout": "10s"
     },
     {
       "discoveredLabels": {
-        "__address__": "payments:8000",
+        "__address__": "demo-payments:8000",
         "__metrics_path__": "/metrics",
         "__scheme__": "http",
         "__scrape_interval__": "15s",
@@ -49,15 +49,15 @@
         "job": "payments-apis"
       },
       "labels": {
-        "instance": "payments:8000",
+        "instance": "demo-payments:8000",
         "job": "payments-apis"
       },
       "scrapePool": "payments-apis",
-      "scrapeUrl": "http://payments:8000/metrics",
-      "globalUrl": "http://payments:8000/metrics",
+      "scrapeUrl": "http://demo-payments:8000/metrics",
+      "globalUrl": "http://demo-payments:8000/metrics",
       "lastError": "",
-      "lastScrape": "2026-10-07T14:18:55.956077847Z",
-      "lastScrapeDuration": 0.006252132,
+      "lastScrape": "2026-10-07T14:18:21.150220013Z",
+      "lastScrapeDuration": 0.020704857,
       "health": "up",
       "scrapeInterval": "15s",
       "scrapeTimeout": "10s"

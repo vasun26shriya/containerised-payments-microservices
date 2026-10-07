@@ -30,7 +30,8 @@ spec:
           readinessProbe:
             exec:
               command: [mongosh, --quiet, --eval, "db.adminCommand('ping').ok"]
-            timeoutSeconds: 5
+            timeoutSeconds: 15
+            periodSeconds: 20
   volumeClaimTemplates:
     - metadata: {name: data}
       spec:

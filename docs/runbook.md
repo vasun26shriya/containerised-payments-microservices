@@ -167,7 +167,24 @@ After Compose starts, verify API outcomes, duplicate/conflicting payment keys, b
 python scripts/smoke_stack.py --prometheus http://localhost:9090 --grafana http://localhost:3000 --evidence .run/compose-smoke.json
 ```
 
-The same smoke script works through Minikube port-forwards. Use `--previous .run/install.json` after upgrade/rollback to confirm the previously created successful order and transaction ID are unchanged. CI performs installation, upgrade and rollback automatically and uploads `compose-evidence` and `minikube-evidence` artifacts. Image publication waits for both deployment jobs as well as the real MongoDB test job. These workflow jobs need to run on GitHub before their success can be claimed.
+The same smoke script works through Minikube port-forwards. Use `--previous .run/install.json` after upgrade/rollback to confirm the previously created successful order and transaction ID are unchanged. CI performs installation, upgrade and rollback automatically and uploads `compose-evidence` and `minikube-evidence` artifacts. Image publication waits for both deployment jobs as well as the real MongoDB test job. See `verification.md` for completed run links and evidence.
+
+## Windows image loading compatibility
+
+Minikube 1.35.0's image cache calls the retired Windows `wmic` tool. If `minikube image load` reports that `wmic` is missing, transfer a Docker archive to the named cluster's Docker runtime instead. The example below uses profile `payments` and Kubernetes 1.32.0:
+
+```powershell
+minikube start -p payments --driver=docker --cpus=2 --memory=4096 --kubernetes-version=v1.32.0
+docker compose build orders payments
+docker tag paymentmicroservices-orders:latest payments-orders:dev
+docker tag paymentmicroservices-payments:latest payments-payments:dev
+New-Item -ItemType Directory -Path .run -Force
+docker save -o .run/kubernetes-images.tar payments-orders:dev payments-payments:dev
+docker cp .run/kubernetes-images.tar payments:/var/payments-images.tar
+docker exec payments docker load -i /var/payments-images.tar
+```
+
+Continue the application/monitoring commands above using `kubectl --context=payments` and Helm `--kube-context payments`. Use `minikube -p payments` for this profile's commands and `minikube delete -p payments` for cleanup. Preloading MongoDB and monitoring images the same way can avoid downloads inside the cluster. Use `/var` for the archive because the node's `/tmp` is a temporary filesystem. This example requires Minikube's Docker container runtime.
 
 ## Native Grafana proof
 
