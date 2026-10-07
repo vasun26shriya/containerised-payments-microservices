@@ -85,7 +85,7 @@ async def require_api_token(
     token = request.app.state.api_token
     if token and (
         credentials is None
-        or not secrets.compare_digest(credentials.credentials, token)
+        or not secrets.compare_digest(credentials.credentials.encode(), token.encode())
     ):
         raise HTTPException(
             401, "Valid bearer token required", headers={"WWW-Authenticate": "Bearer"}

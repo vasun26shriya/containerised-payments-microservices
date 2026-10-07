@@ -11,7 +11,11 @@ Verified on 2026-10-07 in the provided Windows workspace with Python 3.13.7.
 - Added [presentation](demo-guide.md), [interview](interview-guide.md), [operations practice](practice-guide.md) and [security](security.md) guides.
 - Default and secure Compose configurations, production/development Helm lint and rendering, Ruff, and Actionlint passed for this extension. Production Helm now projects per-service URI/token files.
 
-The following earlier results describe the baseline revision. New secured-stack and scan jobs require a successful extension CI run before their remote execution is claimed.
+- The independent Windows release helper passed install, upgrade, rollback and original-order checks in a fresh namespace. See [installation](practice-install-evidence.json), [upgrade](practice-upgrade-evidence.json), [rollback](practice-rollback-evidence.json) and [history](practice-helm-history.txt). The first attempt timed out under CPU saturation; temporarily raising the node quota from two to four CPUs resolved startup delays. The disposable lab was cleaned up afterward.
+- [Extension CI run 37647256365](https://github.com/vasun26shriya/containerised-payments-microservices/actions/runs/37647256365), commit b564247, passed all jobs: tests, Compose, secured stack/restore, Minikube release checks, both scans and both publications. The first scan installation attempt used a runner command that was unavailable; the checksum check was corrected before this successful run.
+- The initial scan of the old Python 3.13.3 images found 455 package/advisory matches per image, including 19 Critical and 153 High matches. [Initial scan evidence](security-scan-before.json) retains the baseline; these are package/advisory matches, not unique CVE counts. This triggered a digest-pinned Python 3.13.16 base update, patched FastAPI/Starlette/PyMongo and removal of pip from runtime images. Final scan results will be recorded separately.
+
+The following earlier results describe the baseline revision.
 
 ## Executed successfully
 

@@ -13,6 +13,7 @@ async def test_auth_rejects_missing_wrong_and_basic_before_database():
             {},
             {"Authorization": "Bearer wrong"},
             {"Authorization": "Basic abc"},
+            {"Authorization": b"Bearer \xff"},
         ):
             result = await client.post(
                 "/payments",
