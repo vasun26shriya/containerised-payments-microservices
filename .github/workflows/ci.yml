@@ -192,7 +192,7 @@ jobs:
           version=0.120.0
           curl -fsSL "https://github.com/anchore/grype/releases/download/v${version}/grype_${version}_linux_amd64.tar.gz" -o "grype_${version}_linux_amd64.tar.gz"
           curl -fsSL "https://github.com/anchore/grype/releases/download/v${version}/grype_${version}_checksums.txt" -o checksums.txt
-          rg "grype_${version}_linux_amd64.tar.gz$" checksums.txt | sha256sum --check -
+          sha256sum --check --ignore-missing checksums.txt
           tar -xzf "grype_${version}_linux_amd64.tar.gz" grype
       - run: docker build -f services/${{ matrix.service }}.Dockerfile -t payments-${{ matrix.service }}:scan .
       - name: Scan image and preserve all findings

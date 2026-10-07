@@ -31,7 +31,7 @@ Prerequisites: an existing Docker-driver Minikube profile/context named `payment
 ./scripts/release_demo.ps1 -Context payments -Namespace payments-demo-2 -Kubectl "$PWD/.tools/kubectl.exe" -Helm "$PWD/.tools/helm/windows-amd64/helm.exe"
 ```
 
-The helper builds two local image tags from the same source to demonstrate release mechanics, transfers them into the node without requiring Windows WMIC, then installs, upgrades and rolls back. Each step verifies APIs and the original persisted order. It retains its lab namespace and saves JSON/history under `.run/release-demo`; its own port forwards are stopped. It does not deploy monitoring again.
+The helper builds two local image tags from the same source to demonstrate release mechanics, transfers them into the node without requiring Windows WMIC, then installs, upgrades and rolls back. Each step verifies APIs and the original persisted order. It retains its lab namespace and saves JSON/history under `.run/release-demo`; its own port forwards are stopped. It does not deploy monitoring again. After a previous image transfer, `-ReuseImages` validates those existing node images and skips rebuilding/transferring them. Use a fresh namespace and `-Evidence .run/release-retry` for a retry. Loaded hosts have a ten-minute Helm timeout; stop heavy unrelated local work before the exercise.
 
 ## Troubleshooting checklist
 

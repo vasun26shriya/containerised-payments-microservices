@@ -25,6 +25,8 @@ python -m http.server 18080 --bind 127.0.0.1 --directory docs
 
 Open http://127.0.0.1:18080/demo/index.html. The recovery exercise temporarily recreates the dedicated secure Payments service with a response delay and restarts secure Orders. It restores normal Payments configuration in `finally`. Do not run it against a shared deployment.
 
+The verified browser session also serves the same files in a loopback-only container at http://127.0.0.1:18081/demo/index.html. [Presentation screenshot](demo/replay.jpg).
+
 The API replay contains no tokens. Its timestamp and responses are in [session.json](demo/session.json). For a screen video, record this presentation and the dashboard with your preferred screen recorder; the repository contains an interactive recording, not a screen video.
 
 The existing Kubernetes dashboard is at http://127.0.0.1:13000 when the runbook forwards are active; the Compose dashboard is at http://127.0.0.1:3000. See [dashboard screenshot](grafana-dashboard.jpg), [release practice](practice-guide.md), and [verification](verification.md).
