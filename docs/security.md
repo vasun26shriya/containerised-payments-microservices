@@ -50,6 +50,17 @@ The local drill runs without concurrent writes. Separate dumps on a standalone s
 
 CI builds and scans both images with a pinned official Grype release whose archive checksum is verified. JSON reports are retained as Actions artifacts. The scan jobs must execute successfully before publication; vulnerability findings are currently reported rather than blocked by severity. Review fixes and establish an explicit severity/exception policy before adopting a production release gate. A successful job does not mean no vulnerabilities were found.
 
+The initial scan prompted a runtime update to digest-pinned Python 3.13.16 on Debian trixie, FastAPI 0.142.2, Starlette 1.7.0 and PyMongo 4.18.2. Pip is removed after dependency installation because runtime containers do not need a package manager. Rebuild images to update dependencies; do not install packages into a running container.
+
+| Package/advisory matches per image | Initial image | Patched image |
+|---|---:|---:|
+| Critical | 19 | 0 |
+| High | 153 | 55 |
+| Total | 455 | 161 |
+| Python package findings | 17 | 0 |
+
+[Initial evidence](security-scan-before.json) and [patched evidence](security-scan-summary.json) identify exact revisions and scan runs. Remaining High matches are base-system packages for which this scan lists no distribution fix. Two Medium Python-binary findings list fixes only in Python 3.15; this project retains Python 3.13. These results need production risk assessment and ongoing upstream updates. The images are not vulnerability-free.
+
 Keep database credentials, bearer tokens, backup archives and full environment dumps out of evidence and public artifacts. The recorded API replay contains only request payloads and responses.
 
 References: [Compose merge](https://docs.docker.com/reference/compose-file/merge/), [Compose secrets](https://docs.docker.com/reference/compose-file/secrets/), [MongoDB restore](https://www.mongodb.com/docs/database-tools/mongorestore/), [Grype installation](https://oss.anchore.com/docs/installation/grype/).

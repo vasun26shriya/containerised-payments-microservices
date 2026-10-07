@@ -2,18 +2,18 @@
   "orders_url": "http://127.0.0.1:28000",
   "payments_url": "http://127.0.0.1:28001",
   "success": {
-    "id": "fc11d34a-f23c-43e5-8c3c-987b436d1325",
+    "id": "38a8f72f-a1df-4e18-8e5b-6502f884b69b",
     "amount": 1234,
     "currency": "INR",
     "status": "paid",
-    "transaction_id": "3c535ae0-9717-4ff0-965a-fb3551a3a47d"
+    "transaction_id": "4cfba928-c1b8-42a9-bbb7-e410d9d217bb"
   },
   "failure": {
-    "id": "c20feee7-52a3-42a5-a60a-195cdd502996",
+    "id": "0e13696e-2d80-4f61-bd15-9173acd82214",
     "amount": 1234,
     "currency": "INR",
     "status": "failed",
-    "transaction_id": "1b0e656d-8c38-42dc-be07-ab2c64b751a8"
+    "transaction_id": "548a378d-bb45-4e4e-979f-6c89107f3536"
   },
   "prometheus_targets": [
     {
@@ -33,8 +33,8 @@
       "scrapeUrl": "http://orders:8000/metrics",
       "globalUrl": "http://orders:8000/metrics",
       "lastError": "",
-      "lastScrape": "2026-10-07T15:25:13.970703602Z",
-      "lastScrapeDuration": 0.012766658,
+      "lastScrape": "2026-10-07T16:11:43.851015427Z",
+      "lastScrapeDuration": 0.006768124,
       "health": "up",
       "scrapeInterval": "15s",
       "scrapeTimeout": "10s"
@@ -56,8 +56,8 @@
       "scrapeUrl": "http://payments:8000/metrics",
       "globalUrl": "http://payments:8000/metrics",
       "lastError": "",
-      "lastScrape": "2026-10-07T15:25:16.348877636Z",
-      "lastScrapeDuration": 0.01553094,
+      "lastScrape": "2026-10-07T16:11:46.229961352Z",
+      "lastScrapeDuration": 0.007235014,
       "health": "up",
       "scrapeInterval": "15s",
       "scrapeTimeout": "10s"

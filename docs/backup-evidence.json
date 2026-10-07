@@ -1,15 +1,15 @@
 {
-  "executed_at": "20261007T152529Z",
+  "executed_at": "20261007T161159Z",
   "databases": {
     "orders": {
-      "source": 4,
-      "restored": 4,
+      "source": 9,
+      "restored": 9,
       "documents_equal": true,
       "indexes_equal": true
     },
     "payments": {
-      "source": 6,
-      "restored": 6,
+      "source": 13,
+      "restored": 13,
       "documents_equal": true,
       "indexes_equal": true
     }
