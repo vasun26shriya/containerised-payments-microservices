@@ -1,0 +1,15 @@
+groups:
+  - name: payments-apis
+    rules:
+      - alert: HighErrorRate
+        expr: sum by (service) (rate(http_requests_total{status=~"5.."}[2m])) / sum by (service) (rate(http_requests_total[2m])) > 0.1 and on(service) sum by (service) (rate(http_requests_total[2m])) > 0.2
+        for: 2m
+        labels: {severity: warning}
+        annotations:
+          summary: 'Sustained server errors for {{ $labels.service }}'
+      - alert: SlowResponses
+        expr: histogram_quantile(0.95, sum by (service, le) (rate(http_request_duration_seconds_bucket[2m]))) > 1
+        for: 2m
+        labels: {severity: warning}
+        annotations:
+          summary: 'P95 latency exceeds one second for {{ $labels.service }}'

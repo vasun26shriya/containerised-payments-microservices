@@ -1,0 +1,164 @@
+{
+  "orders_url": "http://127.0.0.1:56199",
+  "payments_url": "http://127.0.0.1:56198",
+  "success": {
+    "id": "3c8fe59f-ef0d-4ca9-8420-9db7adfa223e",
+    "amount": 1234,
+    "currency": "INR",
+    "status": "paid",
+    "transaction_id": "71549244-9649-4524-930f-3b378573b796"
+  },
+  "failure": {
+    "id": "13af87ec-f27e-4fb9-9d9a-730c8946e9f8",
+    "amount": 1234,
+    "currency": "INR",
+    "status": "failed",
+    "transaction_id": "371f3add-b645-4525-9ca9-ea2b8d309f2d"
+  },
+  "prometheus_targets": [
+    {
+      "discoveredLabels": {
+        "__address__": "127.0.0.1:56198",
+        "__metrics_path__": "/metrics",
+        "__scheme__": "http",
+        "__scrape_interval__": "5s",
+        "__scrape_timeout__": "5s",
+        "job": "payments-apis"
+      },
+      "labels": {
+        "instance": "127.0.0.1:56198",
+        "job": "payments-apis"
+      },
+      "scrapePool": "payments-apis",
+      "scrapeUrl": "http://127.0.0.1:56198/metrics",
+      "globalUrl": "http://DESKTOP-R4DBVBA:56198/metrics",
+      "lastError": "",
+      "lastScrape": "2026-10-07T18:34:03.1713445+05:30",
+      "lastScrapeDuration": 0.0048229,
+      "health": "up",
+      "scrapeInterval": "5s",
+      "scrapeTimeout": "5s"
+    },
+    {
+      "discoveredLabels": {
+        "__address__": "127.0.0.1:56199",
+        "__metrics_path__": "/metrics",
+        "__scheme__": "http",
+        "__scrape_interval__": "5s",
+        "__scrape_timeout__": "5s",
+        "job": "payments-apis"
+      },
+      "labels": {
+        "instance": "127.0.0.1:56199",
+        "job": "payments-apis"
+      },
+      "scrapePool": "payments-apis",
+      "scrapeUrl": "http://127.0.0.1:56199/metrics",
+      "globalUrl": "http://DESKTOP-R4DBVBA:56199/metrics",
+      "lastError": "",
+      "lastScrape": "2026-10-07T18:34:05.2695817+05:30",
+      "lastScrapeDuration": 0.0058477,
+      "health": "up",
+      "scrapeInterval": "5s",
+      "scrapeTimeout": "5s"
+    }
+  ],
+  "grafana_dashboard": {
+    "id": 1,
+    "panels": [
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 1,
+        "targets": [
+          {
+            "expr": "sum by (service) (rate(http_requests_total[2m]))",
+            "legendFormat": "{{service}}",
+            "refId": "A"
+          }
+        ],
+        "title": "Request rate",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 8
+        },
+        "id": 2,
+        "targets": [
+          {
+            "expr": "sum by (service) (rate(http_requests_total{status=~\"5..\"}[2m])) or on (service) (0 * sum by (service) (rate(http_requests_total[2m])))",
+            "legendFormat": "{{service}}",
+            "refId": "A"
+          }
+        ],
+        "title": "Server error rate",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 16
+        },
+        "id": 3,
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum by (service, le) (rate(http_request_duration_seconds_bucket[2m])))",
+            "legendFormat": "{{service}}",
+            "refId": "A"
+          }
+        ],
+        "title": "P95 latency",
+        "type": "timeseries"
+      }
+    ],
+    "refresh": "10s",
+    "schemaVersion": 41,
+    "time": {
+      "from": "now-15m",
+      "to": "now"
+    },
+    "title": "Payments Microservices",
+    "uid": "payments",
+    "version": 2
+  }
+}

@@ -1,0 +1,35 @@
+mongo:
+  enabled: true
+  image: mongo:7.0.21
+  storage: 1Gi
+  resources:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {cpu: 500m, memory: 512Mi}
+secretName: payments-runtime
+services:
+  orders:
+    enabled: true
+    image: payments-orders
+    tag: dev
+    pullPolicy: IfNotPresent
+    replicas: 1
+    database: orders
+    resources:
+      requests: {cpu: 100m, memory: 128Mi}
+      limits: {cpu: 500m, memory: 256Mi}
+  payments:
+    enabled: true
+    image: payments-payments
+    tag: dev
+    pullPolicy: IfNotPresent
+    replicas: 1
+    database: payments
+    resources:
+      requests: {cpu: 100m, memory: 128Mi}
+      limits: {cpu: 500m, memory: 256Mi}
+config:
+  paymentsUrl: ""
+  timeout: '2'
+  attempts: '3'
+  recoveryInterval: '5'
+  paymentDelay: '0'

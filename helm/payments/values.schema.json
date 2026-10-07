@@ -1,0 +1,171 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "mongo",
+    "secretName",
+    "services",
+    "config"
+  ],
+  "properties": {
+    "secretName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mongo": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "image",
+        "storage"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "image": {
+          "type": "string",
+          "minLength": 1
+        },
+        "storage": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "services": {
+      "type": "object",
+      "required": [
+        "orders",
+        "payments"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "orders": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "image",
+            "tag",
+            "pullPolicy",
+            "replicas",
+            "database",
+            "resources"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "image": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tag": {
+              "type": "string",
+              "minLength": 1
+            },
+            "pullPolicy": {
+              "enum": [
+                "Always",
+                "IfNotPresent",
+                "Never"
+              ]
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "database": {
+              "type": "string",
+              "minLength": 1
+            },
+            "resources": {
+              "type": "object",
+              "required": [
+                "requests",
+                "limits"
+              ]
+            }
+          }
+        },
+        "payments": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "image",
+            "tag",
+            "pullPolicy",
+            "replicas",
+            "database",
+            "resources"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "image": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tag": {
+              "type": "string",
+              "minLength": 1
+            },
+            "pullPolicy": {
+              "enum": [
+                "Always",
+                "IfNotPresent",
+                "Never"
+              ]
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "database": {
+              "type": "string",
+              "minLength": 1
+            },
+            "resources": {
+              "type": "object",
+              "required": [
+                "requests",
+                "limits"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "required": [
+        "timeout",
+        "attempts",
+        "recoveryInterval",
+        "paymentDelay"
+      ],
+      "properties": {
+        "paymentsUrl": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]+)?$"
+        },
+        "attempts": {
+          "type": "string",
+          "pattern": "^([1-9]|10)$"
+        },
+        "recoveryInterval": {
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]+)?$"
+        },
+        "paymentDelay": {
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]+)?$"
+        }
+      }
+    }
+  }
+}

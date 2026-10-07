@@ -1,0 +1,41 @@
+{{- if .Values.mongo.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-mongo
+spec:
+  selector: {app: {{ .Release.Name }}-mongo}
+  ports: [{port: 27017, targetPort: 27017}]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-mongo
+spec:
+  serviceName: {{ .Release.Name }}-mongo
+  replicas: 1
+  selector:
+    matchLabels: {app: {{ .Release.Name }}-mongo}
+  template:
+    metadata:
+      labels: {app: {{ .Release.Name }}-mongo}
+    spec:
+      containers:
+        - name: mongo
+          image: {{ .Values.mongo.image }}
+          ports: [{containerPort: 27017}]
+          resources:
+            {{- toYaml .Values.mongo.resources | nindent 12 }}
+          volumeMounts: [{name: data, mountPath: /data/db}]
+          readinessProbe:
+            exec:
+              command: [mongosh, --quiet, --eval, "db.adminCommand('ping').ok"]
+            timeoutSeconds: 5
+  volumeClaimTemplates:
+    - metadata: {name: data}
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: {{ .Values.mongo.storage }}
+{{- end }}

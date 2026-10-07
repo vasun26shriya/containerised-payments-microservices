@@ -1,0 +1,18 @@
+mongo: {enabled: false}
+secretName: payments-production-runtime
+services:
+  orders:
+    image: REPLACE_DOCKERHUB_USER/payments-orders
+    tag: REPLACE_COMMIT_SHA
+    replicas: 3
+    resources:
+      requests: {cpu: 250m, memory: 256Mi}
+      limits: {cpu: '1', memory: 512Mi}
+  payments:
+    image: REPLACE_DOCKERHUB_USER/payments-payments
+    tag: REPLACE_COMMIT_SHA
+    replicas: 3
+    resources:
+      requests: {cpu: 250m, memory: 256Mi}
+      limits: {cpu: '1', memory: 512Mi}
+config: {timeout: '3', attempts: '3', recoveryInterval: '10', paymentDelay: '0'}

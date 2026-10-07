@@ -1,0 +1,5 @@
+# Merge with values.yaml. Create the external Secret per runbook.
+mongo: {enabled: true}
+services:
+  orders: {replicas: 1, tag: dev, pullPolicy: Never}
+  payments: {replicas: 1, tag: dev, pullPolicy: Never}

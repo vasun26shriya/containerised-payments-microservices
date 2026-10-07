@@ -1,0 +1,16 @@
+route:
+  receiver: local-demo
+  group_by: [alertname, service]
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 1h
+receivers:
+  - name: local-demo
+# Local demo has no external notifications. To enable a webhook replace receiver:
+# receivers:
+#   - name: local-demo
+#     webhook_configs:
+#       - url: https://REPLACE_WITH_NOTIFICATION_ENDPOINT
+#         http_config:
+#           authorization:
+#             credentials_file: /run/secrets/notification-token
