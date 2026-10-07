@@ -18,22 +18,22 @@ Verified on 2026-10-07 in the provided Windows workspace with Python 3.13.7.
 - Ran Grafana 12.0.1 with the provisioned dashboard and Prometheus datasource against native Orders/Payments and MongoDB. Deployed-stack smoke checks passed, both Prometheus targets were UP, Grafana confirmed the dashboard was provisioned and datasource health was OK. Saved [Grafana evidence](grafana-evidence.json).
 - Signed into the loopback Grafana demo through the browser, inspected live request-rate and latency data for both services, confirmed zero error-rate data, and saved [the dashboard screenshot](grafana-dashboard.jpg).
 - Added Compose and pinned Minikube CI deployment jobs, including persisted-order checks after install/upgrade/rollback. The expanded workflow passed Actionlint 1.7.7 validation and the new smoke/verifier scripts passed Ruff checks.
-- Initialized the workspace as a Git repository on main; no remote or publishing account has been invented.
+- Published the source to the user-approved public repository: https://github.com/vasun26shriya/containerised-payments-microservices.
 
-## Remaining environment-dependent checks
+## Container and remote CI verification
 
-- Docker daemon/image builds and the complete Compose container stack were not executed. Docker Desktop has now been installed in per-user mode. Its Welcome/first-run screen must be completed; the Linux engine currently returns an HTTP 500 rather than a ready response. CI now builds both API images on PRs as well as main pushes.
-- Kubernetes API admission, Minikube deployment, Kubernetes probes, Helm release upgrade/rollback were not executed. A container engine and Minikube cluster are required; exact commands are in the runbook.
-- Grafana provisioning and visual rendering are now verified natively. Running the same dashboard in Compose/Kubernetes is covered by the new CI jobs, which have not run remotely yet.
-- GitHub Actions has not run remotely and Docker Hub images have not been published. Configure the documented repository Secrets and push main to run that workflow.
-- Alertmanager reception is verified; external notifications are deliberately unconfigured for this local demo.
+- Installed Docker Desktop from its official signed installer and started its Linux engine.
+- Built both API images and started all six Compose services. Both API healthchecks and MongoDB were healthy.
+- Passed deployed Compose API, idempotency, conflict, Prometheus targets and Grafana provisioning checks; saved [Compose evidence](compose-evidence.json).
+- Repeated all 16 integration tests against the running Compose MongoDB: 16 passed, no skips.
+- [GitHub Actions run 37629765160](https://github.com/vasun26shriya/containerised-payments-microservices/actions/runs/37629765160) passed test, compose-smoke and minikube-smoke on commit 8dff22f. CI deployed Kubernetes 1.32.0, checked the application and monitoring, upgraded the Helm release, successfully rolled back to revision 1 and verified the original persisted order after both changes.
+- The image publication jobs failed because Docker Hub credentials were missing. DOCKERHUB_USERNAME is now configured; DOCKERHUB_TOKEN still requires the account owner's entry. Images have not yet been published.
+- Fixed CI artifact retention for the ignored `.run` directory using `include-hidden-files: true`; the earlier successful run has logs but did not retain its hidden-directory artifacts.
 
-The repository implementation and available local checks are complete; the items above are deployment evidence still requiring the relevant runtime/accounts, rather than claims of completed deployment.
+## Remaining checks and local environment
 
-## Local verification environment
+Local Minikube deployment is in progress. Its first startup failed while applying owner-only SSH-key permissions on Windows; the exact permission command subsequently succeeded and the incomplete profile was restarted. Remote Kubernetes success above does not imply the Windows cluster has succeeded.
 
 The host Python virtual-environment bootstrap failed, so dependencies were installed into ignored workspace directories. Windows async tests required approved local socket access outside the restricted sandbox. A normal Python installation can use the README virtual-environment commands. Downloaded tools and test data are ignored by Git and excluded from Docker build contexts.
 
-## Host prerequisites for the remaining deployment
-
-Docker Desktop is now installed per user from Docker's official installer, whose Authenticode signature was verified as valid and signed by Docker Inc. WSL 2.6.3 is available, and workspace-local Minikube 1.35.0/kubectl 1.32.0 were downloaded. Docker's Welcome setup still needs completion before the engine is ready. GitHub CLI was authorized by the user and authenticated as vasun26shriya. Creation of vasun26shriya/containerised-payments-microservices is pending the user's explicit public/private visibility choice. Docker Hub publishing still requires its username and GitHub Secrets. No tokens are stored in the project.
+Alertmanager reception is verified; external notification delivery remains deliberately unconfigured for the local demo. No account tokens are stored in the project. Docker cloud promotional credits are separate from this local project and are not required to run it.

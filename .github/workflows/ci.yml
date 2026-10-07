@@ -71,6 +71,7 @@ jobs:
         with:
           name: compose-evidence
           path: .run/
+          include-hidden-files: true
       - run: docker compose down -v
         if: always()
   minikube-smoke:
@@ -126,9 +127,7 @@ jobs:
           wait "$orders_forward" "$payments_forward" 2>/dev/null || true
           kubectl -n payments port-forward svc/demo-orders 8000:8000 >> .run/orders-forward.log 2>&1 &
           orders_forward=$!
-          orders_forward=$!
           kubectl -n payments port-forward svc/demo-payments 8001:8000 >> .run/payments-forward.log 2>&1 &
-          payments_forward=$!
           payments_forward=$!
           python scripts/smoke_stack.py --previous .run/install.json --evidence .run/upgrade.json
           helm rollback demo 1 -n payments --wait --timeout 5m
@@ -136,9 +135,7 @@ jobs:
           wait "$orders_forward" "$payments_forward" 2>/dev/null || true
           kubectl -n payments port-forward svc/demo-orders 8000:8000 >> .run/orders-forward.log 2>&1 &
           orders_forward=$!
-          orders_forward=$!
           kubectl -n payments port-forward svc/demo-payments 8001:8000 >> .run/payments-forward.log 2>&1 &
-          payments_forward=$!
           payments_forward=$!
           python scripts/smoke_stack.py --previous .run/install.json --evidence .run/rollback.json
           helm history demo -n payments > .run/helm-history.txt
@@ -154,5 +151,6 @@ jobs:
         with:
           name: minikube-evidence
           path: .run/
+          include-hidden-files: true
       - run: minikube delete
         if: always()
