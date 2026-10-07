@@ -1,0 +1,152 @@
+{
+  "recorded_at": "2026-10-07T15:26:16.136612+00:00",
+  "mode": "secured",
+  "steps": [
+    {
+      "title": "Authentication",
+      "explanation": "Requests without the Orders bearer token are rejected before database access.",
+      "command": "POST /orders",
+      "request": null,
+      "http_status": 401,
+      "response": {
+        "error": {
+          "code": "401",
+          "message": "Valid bearer token required"
+        }
+      }
+    },
+    {
+      "title": "Successful order",
+      "explanation": "1250 integer minor units = INR 12.50. A business decline is a terminal result, not a transport error.",
+      "command": "POST /orders",
+      "request": {
+        "amount": 1250,
+        "currency": "INR",
+        "outcome": "success"
+      },
+      "http_status": 201,
+      "response": {
+        "id": "0a0e8a40-b5da-4e02-a468-58dd099e906b",
+        "amount": 1250,
+        "currency": "INR",
+        "status": "paid",
+        "transaction_id": "255a13cd-28ea-4880-b52e-832dbdf3be99"
+      }
+    },
+    {
+      "title": "Retrieve persisted order",
+      "explanation": "The order and transaction ID are persisted in MongoDB.",
+      "command": "GET /orders/0a0e8a40-b5da-4e02-a468-58dd099e906b",
+      "request": null,
+      "http_status": 200,
+      "response": {
+        "id": "0a0e8a40-b5da-4e02-a468-58dd099e906b",
+        "amount": 1250,
+        "currency": "INR",
+        "status": "paid",
+        "transaction_id": "255a13cd-28ea-4880-b52e-832dbdf3be99"
+      }
+    },
+    {
+      "title": "Declined payment",
+      "explanation": "1250 integer minor units = INR 12.50. A business decline is a terminal result, not a transport error.",
+      "command": "POST /orders",
+      "request": {
+        "amount": 1250,
+        "currency": "INR",
+        "outcome": "failure"
+      },
+      "http_status": 201,
+      "response": {
+        "id": "25dfee07-abf5-4e97-9fa9-533fa6708b4f",
+        "amount": 1250,
+        "currency": "INR",
+        "status": "failed",
+        "transaction_id": "19b400f3-65ed-44e0-9d85-222e5eb3c61c"
+      }
+    },
+    {
+      "title": "First payment",
+      "explanation": "A unique key and atomic upsert persist the simulated result together.",
+      "command": "POST /payments",
+      "request": {
+        "order_id": "portfolio-demo",
+        "amount": 1250,
+        "currency": "INR"
+      },
+      "http_status": 200,
+      "response": {
+        "transaction_id": "6e05cc7e-7123-4da9-be93-e187586bcaae",
+        "status": "paid",
+        "payload": {
+          "order_id": "portfolio-demo",
+          "amount": 1250,
+          "currency": "INR",
+          "outcome": "success"
+        }
+      }
+    },
+    {
+      "title": "Safe duplicate",
+      "explanation": "Same key and payload return the original transaction ID. No second transaction is created.",
+      "command": "POST /payments",
+      "request": {
+        "order_id": "portfolio-demo",
+        "amount": 1250,
+        "currency": "INR"
+      },
+      "http_status": 200,
+      "response": {
+        "transaction_id": "6e05cc7e-7123-4da9-be93-e187586bcaae",
+        "status": "paid",
+        "payload": {
+          "order_id": "portfolio-demo",
+          "amount": 1250,
+          "currency": "INR",
+          "outcome": "success"
+        }
+      }
+    },
+    {
+      "title": "Payload conflict",
+      "explanation": "Reusing that key for a different amount returns HTTP 409.",
+      "command": "POST /payments",
+      "request": null,
+      "http_status": 409,
+      "response": {
+        "error": {
+          "code": "409",
+          "message": "Idempotency key already used with a different payload"
+        }
+      }
+    },
+    {
+      "title": "Ambiguous timeout",
+      "explanation": "Payments persists the result before delaying its response. Orders keeps pending because a timeout cannot prove a decline.",
+      "command": "POST /orders",
+      "request": null,
+      "http_status": 201,
+      "response": {
+        "id": "64d6ef8d-2a88-48c3-a6f6-ffb207abcb06",
+        "amount": 2500,
+        "currency": "INR",
+        "status": "pending",
+        "transaction_id": null
+      }
+    },
+    {
+      "title": "Recovered after restart",
+      "explanation": "The restarted Orders worker reuses the persisted key and receives the original payment result.",
+      "command": "GET /orders/64d6ef8d-2a88-48c3-a6f6-ffb207abcb06",
+      "request": null,
+      "http_status": 200,
+      "response": {
+        "id": "64d6ef8d-2a88-48c3-a6f6-ffb207abcb06",
+        "amount": 2500,
+        "currency": "INR",
+        "status": "paid",
+        "transaction_id": "5f675009-0112-4ef2-972d-b811260e235f"
+      }
+    }
+  ]
+}

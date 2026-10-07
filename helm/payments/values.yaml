@@ -6,6 +6,7 @@ mongo:
     requests: {cpu: 100m, memory: 256Mi}
     limits: {cpu: 500m, memory: 512Mi}
 secretName: payments-runtime
+auth: {enabled: false}
 services:
   orders:
     enabled: true

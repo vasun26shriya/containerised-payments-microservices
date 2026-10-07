@@ -119,12 +119,12 @@ Revision 1 must be a known working revision; inspect history before choosing. Ro
 Production template example (requires separately provisioned managed MongoDB and published images):
 
 ```powershell
-# Supply URI securely through your secret manager; do not commit it.
-kubectl -n payments create secret generic payments-production-runtime --from-literal=MONGO_URI=$env:PRODUCTION_MONGO_URI
+# Prepare protected files with actual external database URIs and separate API tokens.
+kubectl -n payments create secret generic payments-production-runtime --from-file=ORDERS_MONGO_URI=.run/secure/secrets/orders-mongo-uri --from-file=PAYMENTS_MONGO_URI=.run/secure/secrets/payments-mongo-uri --from-file=ORDERS_API_TOKEN=.run/secure/secrets/orders-api-token --from-file=PAYMENTS_API_TOKEN=.run/secure/secrets/payments-api-token
 helm upgrade --install demo helm/payments -n payments -f helm/payments/values-prod.yaml --set services.orders.image=YOUR_USER/payments-orders --set services.payments.image=YOUR_USER/payments-payments --set services.orders.tag=FULL_COMMIT_SHA --set services.payments.tag=FULL_COMMIT_SHA --wait --atomic
 ```
 
-Secret values are external to the chart. Changing secrets needs `kubectl rollout restart deployment/demo-orders deployment/demo-payments -n payments`. Production values disable local MongoDB and increase resources/replicas. Never apply placeholder repositories/tags as a real release.
+Secret values are external to the chart. The production chart projects scoped URIs and machine tokens as files; see [security guide](security.md). Generated Compose URIs use local hostnames: replace them with real external connection URIs before production deployment. Changing secrets needs `kubectl rollout restart deployment/demo-orders deployment/demo-payments -n payments`. Coordinate Payments token rotation with its Orders client. Production values disable local MongoDB and increase resources/replicas. Never apply placeholder repositories/tags as a real release.
 
 ## Troubleshooting
 

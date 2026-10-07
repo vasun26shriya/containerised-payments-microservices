@@ -1,0 +1,17 @@
+{
+  "executed_at": "20261007T152529Z",
+  "databases": {
+    "orders": {
+      "source": 4,
+      "restored": 4,
+      "documents_equal": true,
+      "indexes_equal": true
+    },
+    "payments": {
+      "source": 6,
+      "restored": 6,
+      "documents_equal": true,
+      "indexes_equal": true
+    }
+  }
+}

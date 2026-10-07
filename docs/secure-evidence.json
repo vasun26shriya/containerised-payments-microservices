@@ -1,0 +1,170 @@
+{
+  "orders_url": "http://127.0.0.1:28000",
+  "payments_url": "http://127.0.0.1:28001",
+  "success": {
+    "id": "fc11d34a-f23c-43e5-8c3c-987b436d1325",
+    "amount": 1234,
+    "currency": "INR",
+    "status": "paid",
+    "transaction_id": "3c535ae0-9717-4ff0-965a-fb3551a3a47d"
+  },
+  "failure": {
+    "id": "c20feee7-52a3-42a5-a60a-195cdd502996",
+    "amount": 1234,
+    "currency": "INR",
+    "status": "failed",
+    "transaction_id": "1b0e656d-8c38-42dc-be07-ab2c64b751a8"
+  },
+  "prometheus_targets": [
+    {
+      "discoveredLabels": {
+        "__address__": "orders:8000",
+        "__metrics_path__": "/metrics",
+        "__scheme__": "http",
+        "__scrape_interval__": "15s",
+        "__scrape_timeout__": "10s",
+        "job": "payments-apis"
+      },
+      "labels": {
+        "instance": "orders:8000",
+        "job": "payments-apis"
+      },
+      "scrapePool": "payments-apis",
+      "scrapeUrl": "http://orders:8000/metrics",
+      "globalUrl": "http://orders:8000/metrics",
+      "lastError": "",
+      "lastScrape": "2026-10-07T15:25:13.970703602Z",
+      "lastScrapeDuration": 0.012766658,
+      "health": "up",
+      "scrapeInterval": "15s",
+      "scrapeTimeout": "10s"
+    },
+    {
+      "discoveredLabels": {
+        "__address__": "payments:8000",
+        "__metrics_path__": "/metrics",
+        "__scheme__": "http",
+        "__scrape_interval__": "15s",
+        "__scrape_timeout__": "10s",
+        "job": "payments-apis"
+      },
+      "labels": {
+        "instance": "payments:8000",
+        "job": "payments-apis"
+      },
+      "scrapePool": "payments-apis",
+      "scrapeUrl": "http://payments:8000/metrics",
+      "globalUrl": "http://payments:8000/metrics",
+      "lastError": "",
+      "lastScrape": "2026-10-07T15:25:16.348877636Z",
+      "lastScrapeDuration": 0.01553094,
+      "health": "up",
+      "scrapeInterval": "15s",
+      "scrapeTimeout": "10s"
+    }
+  ],
+  "grafana_dashboard": {
+    "id": 1,
+    "panels": [
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 1,
+        "targets": [
+          {
+            "expr": "sum by (service) (rate(http_requests_total[2m]))",
+            "legendFormat": "{{service}}",
+            "refId": "A"
+          }
+        ],
+        "title": "Request rate",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 8
+        },
+        "id": 2,
+        "targets": [
+          {
+            "expr": "sum by (service) (rate(http_requests_total{status=~\"5..\"}[2m])) or on (service) (0 * sum by (service) (rate(http_requests_total[2m])))",
+            "legendFormat": "{{service}}",
+            "refId": "A"
+          }
+        ],
+        "title": "Server error rate",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 16
+        },
+        "id": 3,
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum by (service, le) (rate(http_request_duration_seconds_bucket[2m])))",
+            "legendFormat": "{{service}}",
+            "refId": "A"
+          }
+        ],
+        "title": "P95 latency",
+        "type": "timeseries"
+      }
+    ],
+    "refresh": "10s",
+    "schemaVersion": 41,
+    "time": {
+      "from": "now-15m",
+      "to": "now"
+    },
+    "title": "Payments Microservices",
+    "uid": "payments",
+    "version": 1
+  },
+  "security_checks": {
+    "unauthenticated_rejected": true,
+    "wrong_and_cross_service_tokens_rejected": true,
+    "service_to_service_auth_verified": true,
+    "database_users_cannot_read_other_service_database": true
+  }
+}

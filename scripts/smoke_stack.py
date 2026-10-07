@@ -22,7 +22,17 @@ def eventually(check, seconds=120):
 
 
 def main(a):
-    with httpx.Client(timeout=10) as client:
+    def authorize(request):
+        for base, name in (
+            (a.orders, "ORDERS_API_TOKEN"),
+            (a.payments, "PAYMENTS_API_TOKEN"),
+        ):
+            if str(request.url).startswith(base.rstrip("/") + "/"):
+                token = os.getenv(name)
+                if token:
+                    request.headers["Authorization"] = "Bearer " + token
+
+    with httpx.Client(timeout=10, event_hooks={"request": [authorize]}) as client:
 
         def ready(base):
             r = client.get(base + "/health/ready")

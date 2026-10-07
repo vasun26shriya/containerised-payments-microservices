@@ -1,5 +1,6 @@
 mongo: {enabled: false}
 secretName: payments-production-runtime
+auth: {enabled: true}
 services:
   orders:
     image: REPLACE_DOCKERHUB_USER/payments-orders

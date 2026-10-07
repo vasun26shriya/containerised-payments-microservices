@@ -6,6 +6,17 @@ Runnable portfolio simulation. No real provider, card data, or actual money move
 
 Public images: [Orders](https://hub.docker.com/r/shriyavsingh/payments-orders) and [Payments](https://hub.docker.com/r/shriyavsingh/payments-payments), tagged with full Git commit SHAs. See [verified deployment evidence](docs/verification.md).
 
+## Demo and portfolio
+
+- [Five-minute presentation and recorded API replay](docs/demo-guide.md): actual successful/declined orders, duplicate identity, conflict and restart recovery. Open `docs/demo/index.html` locally to play the saved responses.
+- [Interview design guide](docs/interview-guide.md): consistency, failure handling, release tradeoffs and a defensible resume entry.
+- [Independent operations practice](docs/practice-guide.md): startup, troubleshooting, recovery, backups, upgrade/rollback and precise lab cleanup.
+- [Security guide](docs/security.md): separate service tokens, authenticated MongoDB, mounted secrets, verified restores and image scanning.
+
+![Verified Grafana dashboard](docs/grafana-dashboard.jpg)
+
+The separate secured demo starts with `python scripts/create_demo_secrets.py`, then `docker compose -p payments-secure -f compose.yaml -f compose.secure.yaml up --build -d --wait --wait-timeout 240`. Orders is on port 28000 and Payments on 28001. See the security guide for verification and credentials handling.
+
 ```mermaid
 flowchart LR
   Client --> Orders[Orders FastAPI]
@@ -70,6 +81,10 @@ This atomic simulation is deliberately possible because there is no external cha
 | RECOVERY_INTERVAL_SECONDS | 5 | Poll interval |
 | PAYMENT_RESPONSE_DELAY_SECONDS | 0 | Simulated delay after commit, development only |
 | GRAFANA_ADMIN_PASSWORD | local-demo-change-me | Compose Grafana password |
+| API_AUTH_REQUIRED | false | Fail startup unless a service token is configured |
+| API_TOKEN / API_TOKEN_FILE | unset | Service-specific bearer credential; file variant supports mounted secrets |
+| PAYMENTS_API_TOKEN / PAYMENTS_API_TOKEN_FILE | unset | Orders outbound Payments credential |
+| MONGO_URI_FILE | unset | File-mounted connection URI; mutually exclusive with MONGO_URI |
 
 Use the provided `.env.example` for Compose variables. Direct Python runs consume process environment variables, not `.env` automatically. Run each API in a separate terminal using `python -m uvicorn services.orders:app --port 8000` and `python -m uvicorn services.payments:app --port 8001` with MongoDB running.
 
@@ -87,17 +102,17 @@ helm template demo helm/payments -f helm/payments/values-prod.yaml
 
 Integration tests create isolated random databases and drop them afterward. Without `TEST_MONGO_URI`, they explicitly skip; model tests still run. CI always sets it and uses a real MongoDB container. `constraints.txt` freezes the compatible transitive dependency set. Ruff checks keep the Python source formatted and linted. Tests cover sequential/concurrent duplicates, unique index, conflicts, both outcomes, orders, timeout after commit, retries, recovery in a fresh app, dependency health and normalized metrics. ASGI tests inject transport timeouts; a real TCP integration test starts both APIs, loses a response after payment commit, restarts both processes and verifies recovery to the original transaction ID.
 
-Configure GitHub repository Secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (Docker Hub access token with write permission). On PRs and pushes to main, tests and configuration checks run. Compose smoke tests verify the deployed APIs, Prometheus targets and Grafana provisioning. A separate pinned Minikube job builds images, deploys APIs and monitoring, then verifies an upgrade and rollback with persisted orders. Both jobs upload logs and JSON evidence. Only main pushes passing all three jobs publish `USERNAME/payments-orders:FULL_COMMIT_SHA` and `USERNAME/payments-payments:FULL_COMMIT_SHA`. SHA tags are immutable by convention: restrict registry write permissions; Docker Hub can otherwise overwrite tags. CI deploys a disposable Minikube cluster for verification. Local and production releases use the runbook commands.
+Configure GitHub repository Secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (Docker Hub access token with write permission). On PRs and pushes to main, tests and configuration checks run. Compose smoke tests verify APIs and monitoring. A pinned Minikube job verifies install, upgrade and rollback with persisted orders. A secured-stack job checks authentication, scoped database access and backup restoration. Both API images receive checksum-verified Grype scans with retained JSON reports. Publication waits for all five job groups; scan findings are reported, not currently blocked by severity. Passing main pushes publish `USERNAME/payments-orders:FULL_COMMIT_SHA` and `USERNAME/payments-payments:FULL_COMMIT_SHA`. SHA tags are immutable by convention: restrict registry write permissions; Docker Hub can otherwise overwrite tags. CI uses a disposable Minikube cluster. Local and production releases use the runbook commands.
 
 See [deployment runbook](docs/runbook.md) for Minikube, upgrades, rollback and monitoring.
 
 ## Production limitations
 
-Development MongoDB is unauthenticated and single-node. The production values require an external managed MongoDB Secret, real image repositories and SHA tags. This is a deployment skeleton, not a production certification. Add authentication/authorization, TLS/Ingress, network policies, secret rotation, backups and restore tests, a replica set, majority write concern, rate limits, tracing, security scanning, pinned action digests/image digests, disruption budgets and autoscaling. Current polling workers have no leases/backpressure and can scan the same records across replicas. The worker already uses an indexed next-attempt schedule to avoid starvation. Bound concurrency and add jitter, retry budgets/dead-letter queues and pending-age alerts at scale. Monitoring here is local and has ephemeral storage; production needs retention, HA and authenticated access. Metrics omit query strings and IDs, normalize routes and use `unmatched` for unknown paths. Server error alerts include readiness failures; failed business payments are HTTP 200 and do not count as server errors.
+Default development MongoDB is unauthenticated and single-node. The separate secured Compose mode implements machine-token authentication, scoped MongoDB users, mounted secret files and a tested local restore. Production Helm values enable API tokens and require per-service external database URIs and verified image tags. This is a deployment skeleton, not production certification. Add end-user identity/authorization, TLS/Ingress, network policies, coordinated secret rotation and managed secret provisioning, offsite encrypted backups, a replica set, majority write concern, rate limits, tracing, severity-based scan policy, pinned action/image digests, disruption budgets and autoscaling. Polling workers have no leases/backpressure and can scan the same records across replicas. They use an indexed next-attempt schedule to avoid starvation. Bound concurrency and add jitter, retry budgets/dead-letter queues and pending-age alerts at scale. Monitoring is local with ephemeral storage; production needs retention, HA and authenticated access. Metrics omit query strings and IDs, normalize routes and use `unmatched` for unknown paths. Readiness failures contribute to server-error alerts; business declines are HTTP 200.
 
 ## Verification status
 
-The complete 16-test suite passed against real MongoDB, including real HTTP timeouts and restarts of both API processes. Compose configuration, Helm dev/prod lint/rendering, Prometheus configuration and alert tests, and Alertmanager configuration passed. Both alerts fired and reached Alertmanager in a live local demonstration. See [verification record](docs/verification.md) and [alert evidence](docs/monitoring-evidence.json). Grafana provisioning, datasource health and visual rendering were verified against a live native stack; see [dashboard screenshot](docs/grafana-dashboard.jpg). Both API images were built and the full Compose stack passed locally. GitHub CI passed tests, Compose and Minikube install/upgrade/rollback, then published both images to Docker Hub with full SHA tags. The verification record links the successful run and retained evidence.
+The expanded 18-test suite passed against real MongoDB, including actual HTTP timeouts/restarts and authentication checks. Secured-stack access checks and isolated backup restoration passed locally; the recorded demo contains nine actual response steps. The baseline deployment also passed Compose, Helm, monitoring rules and live alert delivery, and published both SHA-tagged images through GitHub CI. See [verification record](docs/verification.md) for revision-specific results and new workflow status, [secure evidence](docs/secure-evidence.json), [restore evidence](docs/backup-evidence.json), and [alert evidence](docs/monitoring-evidence.json).
 
 ## Official configuration references
 

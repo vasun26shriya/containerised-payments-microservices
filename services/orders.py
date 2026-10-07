@@ -5,15 +5,22 @@ import os
 import uuid
 import time
 from contextlib import asynccontextmanager, suppress
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 import httpx
 from pymongo import AsyncMongoClient
-from services.common import OrderInput, instrument
+from services.common import (
+    OrderInput,
+    OrderOutput,
+    configure_auth,
+    instrument,
+    require_api_token,
+    setting,
+)
 
 log = logging.getLogger("payments_demo")
 
 
-def create_app(mongo_uri=None, database=None, transport=None):
+def create_app(mongo_uri=None, database=None, transport=None, auth_token=None):
     async def settle(app, order):
         payload = {"order_id": order["_id"], **order["request"]}
         for attempt in range(app.state.attempts):
@@ -107,7 +114,7 @@ def create_app(mongo_uri=None, database=None, transport=None):
     @asynccontextmanager
     async def lifespan(app):
         app.state.mongo = AsyncMongoClient(
-            mongo_uri or os.getenv("MONGO_URI", "mongodb://localhost:27017"),
+            mongo_uri or setting("MONGO_URI", "mongodb://localhost:27017"),
             serverSelectionTimeoutMS=2000,
         )
         app.state.collection = app.state.mongo[
@@ -120,12 +127,16 @@ def create_app(mongo_uri=None, database=None, transport=None):
             raise ValueError(
                 "PAYMENT_ATTEMPTS must be 1..10 and RECOVERY_INTERVAL_SECONDS positive"
             )
+        payment_token = setting("PAYMENTS_API_TOKEN")
         app.state.http = httpx.AsyncClient(
             base_url=os.getenv("PAYMENTS_URL", "http://localhost:8001"),
             timeout=httpx.Timeout(
                 float(os.getenv("PAYMENT_TIMEOUT_SECONDS", "2")), connect=1
             ),
             transport=transport,
+            headers={"Authorization": "Bearer " + payment_token}
+            if payment_token
+            else {},
         )
         worker = asyncio.create_task(recover(app))
         try:
@@ -138,6 +149,7 @@ def create_app(mongo_uri=None, database=None, transport=None):
             await app.state.mongo.close()
 
     app = FastAPI(title="Orders API", lifespan=lifespan)
+    configure_auth(app, auth_token)
     instrument(app, "orders")
 
     @app.get("/health/ready")
@@ -159,7 +171,12 @@ def create_app(mongo_uri=None, database=None, transport=None):
             "transaction_id": order.get("transaction_id"),
         }
 
-    @app.post("/orders", status_code=201)
+    @app.post(
+        "/orders",
+        status_code=201,
+        response_model=OrderOutput,
+        dependencies=[Depends(require_api_token)],
+    )
     async def create(payload: OrderInput):
         oid = str(uuid.uuid4())
         order = {
@@ -173,7 +190,11 @@ def create_app(mongo_uri=None, database=None, transport=None):
         await settle(app, order)
         return public(await app.state.collection.find_one({"_id": oid}))
 
-    @app.get("/orders/{order_id}")
+    @app.get(
+        "/orders/{order_id}",
+        response_model=OrderOutput,
+        dependencies=[Depends(require_api_token)],
+    )
     async def get(order_id: str):
         order = await app.state.collection.find_one({"_id": order_id})
         if not order:

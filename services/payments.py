@@ -2,17 +2,24 @@ import asyncio
 import os
 import uuid
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException
 from pymongo import AsyncMongoClient, ReturnDocument
 from pymongo.errors import DuplicateKeyError
-from services.common import PaymentInput, instrument
+from services.common import (
+    PaymentInput,
+    PaymentOutput,
+    configure_auth,
+    instrument,
+    require_api_token,
+    setting,
+)
 
 
-def create_app(mongo_uri=None, database=None):
+def create_app(mongo_uri=None, database=None, auth_token=None):
     @asynccontextmanager
     async def lifespan(app):
         app.state.mongo = AsyncMongoClient(
-            mongo_uri or os.getenv("MONGO_URI", "mongodb://localhost:27017"),
+            mongo_uri or setting("MONGO_URI", "mongodb://localhost:27017"),
             serverSelectionTimeoutMS=2000,
         )
         app.state.collection = app.state.mongo[
@@ -25,6 +32,7 @@ def create_app(mongo_uri=None, database=None):
             await app.state.mongo.close()
 
     app = FastAPI(title="Payments API", lifespan=lifespan)
+    configure_auth(app, auth_token)
     instrument(app, "payments")
 
     @app.get("/health/ready")
@@ -35,7 +43,11 @@ def create_app(mongo_uri=None, database=None):
             raise HTTPException(503, "MongoDB unavailable")
         return {"status": "ready"}
 
-    @app.post("/payments")
+    @app.post(
+        "/payments",
+        response_model=PaymentOutput,
+        dependencies=[Depends(require_api_token)],
+    )
     async def pay(
         payload: PaymentInput,
         idempotency_key: str = Header(min_length=1, max_length=128),

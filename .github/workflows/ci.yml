@@ -33,7 +33,7 @@ jobs:
       - run: docker run --rm --entrypoint promtool -v "$PWD/monitoring:/etc/prometheus" prom/prometheus:v3.4.1 test rules /etc/prometheus/alerts.test.yml
       - run: docker run --rm --entrypoint amtool -v "$PWD/monitoring:/etc/alertmanager" prom/alertmanager:v0.28.1 check-config /etc/alertmanager/alertmanager.yml
   publish:
-    needs: [test, compose-smoke, minikube-smoke]
+    needs: [test, compose-smoke, minikube-smoke, secure-smoke, image-scan]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     strategy:
@@ -154,3 +154,54 @@ jobs:
           include-hidden-files: true
       - run: minikube delete
         if: always()
+
+  secure-smoke:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.13'}
+      - run: pip install -r requirements-dev.txt
+      - run: python scripts/create_demo_secrets.py
+      - run: docker compose -p payments-secure -f compose.yaml -f compose.secure.yaml up --build -d --wait --wait-timeout 240
+      - run: python scripts/verify_secure.py --evidence .run/secure-smoke.json
+      - run: python scripts/backup_restore.py --evidence .run/backup-restore.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: secure-evidence
+          path: |
+            .run/secure-smoke.json
+            .run/backup-restore.json
+          include-hidden-files: true
+      - run: docker compose -p payments-secure -f compose.yaml -f compose.secure.yaml down -v
+        if: always()
+
+  image-scan:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      matrix: {service: [orders, payments]}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install checksum-verified Grype
+        run: |
+          version=0.120.0
+          curl -fsSL "https://github.com/anchore/grype/releases/download/v${version}/grype_${version}_linux_amd64.tar.gz" -o "grype_${version}_linux_amd64.tar.gz"
+          curl -fsSL "https://github.com/anchore/grype/releases/download/v${version}/grype_${version}_checksums.txt" -o checksums.txt
+          rg "grype_${version}_linux_amd64.tar.gz$" checksums.txt | sha256sum --check -
+          tar -xzf "grype_${version}_linux_amd64.tar.gz" grype
+      - run: docker build -f services/${{ matrix.service }}.Dockerfile -t payments-${{ matrix.service }}:scan .
+      - name: Scan image and preserve all findings
+        run: |
+          mkdir -p .run/scans
+          ./grype docker:payments-${{ matrix.service }}:scan -o json > .run/scans/${{ matrix.service }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scan-${{ matrix.service }}
+          path: .run/scans/*.json
+          include-hidden-files: true

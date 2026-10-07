@@ -2,6 +2,17 @@
 
 Verified on 2026-10-07 in the provided Windows workspace with Python 3.13.7.
 
+## Portfolio and security extension
+
+- The expanded real-MongoDB suite passed: **18 tests, no skips**. New checks cover rejected bearer credentials, accessible internal probes, OpenAPI security declarations and fail-closed secret configuration.
+- The separate authenticated Compose stack passed missing/wrong/cross-service token checks, correct authenticated business flows and monitoring checks. Separate MongoDB users could read their own database and were denied cross-database reads. See [secure evidence](secure-evidence.json).
+- Both databases were dumped, restored into isolated temporary databases, and compared for identical documents and indexes; [backup evidence](backup-evidence.json) records the successful result without credentials.
+- [The recorded demo](demo/index.html) contains nine steps from actual HTTP responses, including a payment timeout after commit and successful recovery after an Orders restart. It is an interactive response recording, not a screen video.
+- Added [presentation](demo-guide.md), [interview](interview-guide.md), [operations practice](practice-guide.md) and [security](security.md) guides.
+- Default and secure Compose configurations, production/development Helm lint and rendering, Ruff, and Actionlint passed for this extension. Production Helm now projects per-service URI/token files.
+
+The following earlier results describe the baseline revision. New secured-stack and scan jobs require a successful extension CI run before their remote execution is claimed.
+
 ## Executed successfully
 
 - Downloaded workspace-local MongoDB 7.0.21, Helm 3.17.3, Compose 2.36.2, Prometheus 3.4.1 and Alertmanager 0.28.1. No system installation was needed.

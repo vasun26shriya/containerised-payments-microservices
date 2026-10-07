@@ -1,0 +1,53 @@
+# docker compose -p payments-secure -f compose.yaml -f compose.secure.yaml up --build -d --wait
+# Compose 2.24.4+; generate ignored local credentials first.
+services:
+  mongo:
+    command: [mongod, --auth, --bind_ip_all]
+    ports: !override ["127.0.0.1:28017:27017"]
+    volumes: !override
+      - secure-mongo-data:/data/db
+      - ./infra/mongo/init-users.js:/docker-entrypoint-initdb.d/init-users.js:ro
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo-root-password
+    secrets: [mongo-root-password, orders-db-password, payments-db-password]
+    healthcheck:
+      test: [CMD, mongosh, --quiet, --eval, "db.getSiblingDB('admin').auth('admin', require('fs').readFileSync('/run/secrets/mongo-root-password','utf8').trim()); if (!db.adminCommand('ping').ok) quit(1)"]
+  orders:
+    ports: !override ["127.0.0.1:28000:8000"]
+    environment:
+      MONGO_URI: null
+      MONGO_URI_FILE: /run/secrets/orders-mongo-uri
+      API_AUTH_REQUIRED: 'true'
+      API_TOKEN_FILE: /run/secrets/orders-api-token
+      PAYMENTS_API_TOKEN_FILE: /run/secrets/payments-api-token
+    secrets: [orders-mongo-uri, orders-api-token, payments-api-token]
+  payments:
+    ports: !override ["127.0.0.1:28001:8000"]
+    environment:
+      MONGO_URI: null
+      MONGO_URI_FILE: /run/secrets/payments-mongo-uri
+      API_AUTH_REQUIRED: 'true'
+      API_TOKEN_FILE: /run/secrets/payments-api-token
+    secrets: [payments-mongo-uri, payments-api-token]
+  prometheus:
+    ports: !override ["127.0.0.1:29090:9090"]
+  alertmanager:
+    ports: !override ["127.0.0.1:29093:9093"]
+  grafana:
+    ports: !override ["127.0.0.1:23000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: null
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana-password
+    secrets: [grafana-password]
+volumes:
+  secure-mongo-data:
+secrets:
+  mongo-root-password: {file: .run/secure/secrets/mongo-root-password}
+  orders-db-password: {file: .run/secure/secrets/orders-db-password}
+  payments-db-password: {file: .run/secure/secrets/payments-db-password}
+  orders-mongo-uri: {file: .run/secure/secrets/orders-mongo-uri}
+  payments-mongo-uri: {file: .run/secure/secrets/payments-mongo-uri}
+  orders-api-token: {file: .run/secure/secrets/orders-api-token}
+  payments-api-token: {file: .run/secure/secrets/payments-api-token}
+  grafana-password: {file: .run/secure/secrets/grafana-password}
