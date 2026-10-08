@@ -106,6 +106,14 @@ Configure GitHub repository Secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (
 
 See [deployment runbook](docs/runbook.md) for Minikube, upgrades, rollback and monitoring.
 
+## Contributors and demonstration guides
+
+- [Shriya (`vasun26shriya`)](https://github.com/vasun26shriya): existing implementation, deployment, monitoring, and project integration.
+- [Shreya (`yasho-26singh`)](https://github.com/yasho-26singh): [hosted demo guide](docs/hosted-demo.md), including the differences between the public app and this containerised stack.
+- [Sasyak (`SasyakSubudhi`)](https://github.com/SasyakSubudhi): [payment consistency reference](docs/payment-invariants.md), covering idempotency, timeout recovery, and production boundaries.
+
+The two new guides are AI-assisted contributions published through the contributors' connected accounts. Earlier implementation commits retain their original authorship.
+
 ## Production limitations
 
 Default development MongoDB is unauthenticated and single-node. The separate secured Compose mode implements machine-token authentication, scoped MongoDB users, mounted secret files and a tested local restore. Production Helm values enable API tokens and require per-service external database URIs and verified image tags. This is a deployment skeleton, not production certification. Add end-user identity/authorization, TLS/Ingress, network policies, coordinated secret rotation and managed secret provisioning, offsite encrypted backups, a replica set, majority write concern, rate limits, tracing, severity-based scan policy, pinned action/image digests, disruption budgets and autoscaling. Polling workers have no leases/backpressure and can scan the same records across replicas. They use an indexed next-attempt schedule to avoid starvation. Bound concurrency and add jitter, retry budgets/dead-letter queues and pending-age alerts at scale. Monitoring is local with ephemeral storage; production needs retention, HA and authenticated access. Metrics omit query strings and IDs, normalize routes and use `unmatched` for unknown paths. Readiness failures contribute to server-error alerts; business declines are HTTP 200.
